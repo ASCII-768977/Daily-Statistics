@@ -1,8 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
-import * as echarts from 'echarts';
-import { DatePicker, Select, Checkbox, Row, Col } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { DatePicker, Select, Checkbox, Row, Col, Flex } from 'antd';
 import dayjs from 'dayjs';
-import useChart from '../hooks/useChart';
+import Chart from './Chart';
 
 interface HospitalData {
   [key: string]: number | string;
@@ -21,8 +20,6 @@ interface DataRecord {
 }
 
 export default function ChartContainer() {
-  const chartRef = useRef<HTMLDivElement>(null);
-
   const [allData, setAllData] = useState<DataRecord[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedMetric, setSelectedMetric] = useState<string>('');
@@ -35,16 +32,6 @@ export default function ChartContainer() {
   ]);
   const [metricsOptions, setMetricsOptions] = useState<string[]>([]);
 
-  useChart({
-    chartRef,
-    selectedDate,
-    selectedMetric,
-    chartType,
-    selectedHospitals,
-    allData,
-  });
-
-  // 获取 data.json
   useEffect(() => {
     fetch('/data.json')
       .then((res) => res.json())
@@ -52,16 +39,13 @@ export default function ChartContainer() {
         const rawData: DataRecord[] = jsonData?.['数据记录'] ?? [];
         setAllData(rawData);
 
-        // 假设第一条数据的"医院数据.全院"里有我们想要的所有指标
         if (rawData.length > 0) {
           const sampleKeys = Object.keys(rawData[0].医院数据.全院);
           setMetricsOptions(
             sampleKeys.filter((key) => key !== '当月截止总收入')
           );
-          // 默认为第一个指标
           setSelectedMetric(sampleKeys[0]);
         }
-        // 默认为第一条数据的日期
         if (rawData.length > 0) {
           setSelectedDate(rawData[0].日期);
         }
@@ -71,66 +55,68 @@ export default function ChartContainer() {
       });
   }, []);
 
-  // 处理日期改变
   const handleDateChange = (date: dayjs.Dayjs | null) => {
     if (date) {
       setSelectedDate(date.format('YYYY-MM-DD'));
     }
   };
 
-  // 处理数据分类改变
   const handleMetricChange = (value: string) => {
     setSelectedMetric(value);
   };
 
-  // 处理图表类型改变
   const handleChartTypeChange = (value: string) => {
     setChartType(value);
   };
 
-  // 处理医院区域多选
   const handleHospitalChange = (checkedValues: any[]) => {
     setSelectedHospitals(checkedValues as string[]);
   };
-
-  // 获取所有已存在的日期，用于 DatePicker 的选择
-  const dateOptions = allData.map((item) => item.日期);
 
   return (
     <div className="chart-container">
       <div className="controls">
         <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12} md={8} lg={6}>
-            <DatePicker
-              placeholder="选择日期"
-              value={selectedDate ? dayjs(selectedDate) : null}
-              onChange={handleDateChange}
-            />
+          <Col xs={24} sm={8} md={8} lg={8}>
+            <Flex justify="start" align="center">
+              <p>日期选择：</p>
+              <DatePicker
+                placeholder="选择日期"
+                value={selectedDate ? dayjs(selectedDate) : null}
+                onChange={handleDateChange}
+              />
+            </Flex>
           </Col>
-          <Col xs={24} sm={12} md={8} lg={6}>
-            <Select
-              className="full-width-select"
-              placeholder="选择数据分类"
-              options={metricsOptions.map((metric) => ({
-                label: metric,
-                value: metric,
-              }))}
-              value={selectedMetric}
-              onChange={handleMetricChange}
-            />
+          <Col xs={24} sm={8} md={8} lg={8}>
+            <Flex justify="start" align="center">
+              <p>分类选择：</p>
+              <Select
+                className="select-width"
+                placeholder="选择数据分类"
+                options={metricsOptions.map((metric) => ({
+                  label: metric,
+                  value: metric,
+                }))}
+                value={selectedMetric}
+                onChange={handleMetricChange}
+              />
+            </Flex>
           </Col>
-          <Col xs={24} sm={12} md={8} lg={6}>
-            <Select
-              className="full-width-select"
-              placeholder="图表类型"
-              options={[
-                { label: '折线图', value: 'line' },
-                { label: '柱状图', value: 'bar' },
-                { label: '饼图', value: 'pie' },
-              ]}
-              value={chartType}
-              onChange={handleChartTypeChange}
-            />
+          <Col xs={24} sm={8} md={8} lg={8}>
+            <Flex justify="start" align="center">
+              <p>图表选择：</p>
+              <Select
+                className="select-width"
+                placeholder="图表类型"
+                options={[
+                  { label: '折线图', value: 'line' },
+                  { label: '柱状图', value: 'bar' },
+                  { label: '饼图', value: 'pie' },
+                ]}
+                value={chartType}
+                onChange={handleChartTypeChange}
+              />
+            </Flex>
           </Col>
         </Row>
 
@@ -140,7 +126,13 @@ export default function ChartContainer() {
           onChange={handleHospitalChange}
         />
       </div>
-      <div className="chart-wrapper" ref={chartRef} />
+      <Chart
+        selectedDate={selectedDate}
+        selectedMetric={selectedMetric}
+        chartType={chartType}
+        selectedHospitals={selectedHospitals}
+        allData={allData}
+      />
     </div>
   );
 }

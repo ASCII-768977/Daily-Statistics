@@ -1,8 +1,7 @@
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import * as echarts from 'echarts';
 
-interface UseChartProps {
-  chartRef: React.RefObject<HTMLDivElement>;
+interface ChartProps {
   selectedDate: string;
   selectedMetric: string;
   chartType: string;
@@ -10,14 +9,15 @@ interface UseChartProps {
   allData: any[];
 }
 
-const useChart = ({
-  chartRef,
+const Chart: React.FC<ChartProps> = ({
   selectedDate,
   selectedMetric,
   chartType,
   selectedHospitals,
   allData,
-}: UseChartProps) => {
+}) => {
+  const chartRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (
       !chartRef.current ||
@@ -140,6 +140,8 @@ const useChart = ({
     selectedHospitals,
     allData,
   ]);
+
+  return <div className="chart-wrapper" ref={chartRef} />;
 };
 
-export default useChart;
+export default Chart;
