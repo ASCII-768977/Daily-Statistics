@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DatePicker, Select, Checkbox, Row, Col, Flex } from 'antd';
 import dayjs from 'dayjs';
 import Chart from './Chart';
@@ -14,6 +14,8 @@ interface HospitalGroup {
   石景山院区: HospitalData;
 }
 
+type HospitalKey = keyof HospitalGroup;
+
 interface DataRecord {
   日期: string;
   医院数据: HospitalGroup;
@@ -23,8 +25,8 @@ export default function ChartContainer() {
   const [allData, setAllData] = useState<DataRecord[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedMetric, setSelectedMetric] = useState<string>('');
-  const [chartType, setChartType] = useState<string>('line');
-  const [selectedHospitals, setSelectedHospitals] = useState<string[]>([
+  const [chartType, setChartType] = useState<'line' | 'bar' | 'pie'>('line');
+  const [selectedHospitals, setSelectedHospitals] = useState<HospitalKey[]>([
     '全院',
     '本部',
     '常营院区',
@@ -65,12 +67,12 @@ export default function ChartContainer() {
     setSelectedMetric(value);
   };
 
-  const handleChartTypeChange = (value: string) => {
+  const handleChartTypeChange = (value: 'line' | 'bar' | 'pie') => {
     setChartType(value);
   };
 
-  const handleHospitalChange = (checkedValues: any[]) => {
-    setSelectedHospitals(checkedValues as string[]);
+  const handleHospitalChange = (checkedValues: HospitalKey[]) => {
+    setSelectedHospitals(checkedValues);
   };
 
   return (

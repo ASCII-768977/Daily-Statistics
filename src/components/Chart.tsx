@@ -1,12 +1,30 @@
 import React, { useEffect, useRef } from 'react';
 import * as echarts from 'echarts';
 
+interface HospitalData {
+  [key: string]: number | string;
+}
+
+interface HospitalGroup {
+  全院: HospitalData;
+  本部: HospitalData;
+  常营院区: HospitalData;
+  石景山院区: HospitalData;
+}
+
+type HospitalKey = keyof HospitalGroup;
+
+interface DataRecord {
+  日期: string;
+  医院数据: HospitalGroup;
+}
+
 interface ChartProps {
   selectedDate: string;
   selectedMetric: string;
-  chartType: string;
-  selectedHospitals: string[];
-  allData: any[];
+  chartType: 'line' | 'bar' | 'pie';
+  selectedHospitals: HospitalKey[];
+  allData: DataRecord[];
 }
 
 const Chart: React.FC<ChartProps> = ({
